@@ -6,6 +6,8 @@ common:
     writekey: 7f3c63a70eecc61d635917de46bea4e6
     dataset: litmus tests
 
+.editorconfig:
+  unmanaged: true
 .gitattributes:
   include:
     '*.rb': 'eol=lf'
@@ -15,37 +17,39 @@ common:
     '*.epp': 'eol=lf'
 .gitignore:
   required: &ignorepaths
-      - '.git/'
-      - '.*.sw[op]'
-      - '.metadata'
-      - '.yardoc'
-      - '.yardwarns'
-      - '*.iml'
-      - '/.bundle/'
-      - '/.idea/'
-      - '/.vagrant/'
-      - '/coverage/'
-      - '/bin/'
-      - '/doc/'
-      - '/Gemfile.local'
-      - '/Gemfile.lock'
-      - '/junit/'
-      - '/log/'
-      - '/pkg/'
-      - '/spec/fixtures/manifests/'
-      - '/spec/fixtures/modules/'
-      - '/tmp/'
-      - '/vendor/'
-      - '/convert_report.txt'
-      - '/update_report.txt'
-      - '.DS_Store'
-      - '.project'
-      - '.envrc'
-      - '/inventory.yaml'
+    - '.git/'
+    - '.*.sw[op]'
+    - '.metadata'
+    - '.yardoc'
+    - '.yardwarns'
+    - '*.iml'
+    - '/.bundle/'
+    - '/.idea/'
+    - '/.vagrant/'
+    - '/coverage/'
+    - '/bin/'
+    - '/doc/'
+    - '/Gemfile.local'
+    - '/Gemfile.lock'
+    - '/junit/'
+    - '/log/'
+    - '/pkg/'
+    - '/spec/fixtures/manifests/'
+    - '/spec/fixtures/modules/'
+    - '/tmp/'
+    - '/vendor/'
+    - '/convert_report.txt'
+    - '/update_report.txt'
+    - '.DS_Store'
+    - '.project'
+    - '.envrc'
+    - '/inventory.yaml'
+    - '/spec/fixtures/litmus_inventory.yaml'
 .pdkignore:
   required: *ignorepaths
   paths:
     - '/appveyor.yml'
+    - '/.editorconfig'
     - '/.fixtures.yml'
     - '/Gemfile'
     - '/.gitattributes'
@@ -62,6 +66,7 @@ common:
     - '/spec/'
     - '/.vscode/'
     - '/.sync.yml'
+    - '/.devcontainer/'
 .travis.yml:
   stages:
     - static
@@ -96,7 +101,7 @@ common:
     provision_list: [travis_deb, travis_el]
     puppet_collection: [puppet6]
     rvm: '2.5.7'
-    install_wget: no
+    install_wget: "no"
   notifications:
     email: false
   deploy_to_forge:
@@ -397,7 +402,7 @@ Rakefile:
 
   profiles:
     # no rubocops enabled, caveat emptor!
-    off:
+    "off":
       enabled_cops: {}
 
     # a sanitized list of cops that'll cleanup a code base without much effort
@@ -500,10 +505,9 @@ Rakefile:
         Naming/ConstantName:
         Style/Documentation:
           Exclude:
-          - 'lib/puppet/parser/functions/**/*'
-          - 'spec/**/*'
+            - 'lib/puppet/parser/functions/**/*'
+            - 'spec/**/*'
         Style/DoubleNegation:
-        Style/EndBlock:
         Naming/FileName:
         Lint/FlipFlop:
         Style/For:
@@ -601,13 +605,18 @@ Gemfile:
           - 'syntax lint metadata_lint check:symlinks check:git_ignore check:dot_underscore check:test_file rubocop'
           - parallel_spec
         puppet_version: '~> 6'
+      '2.7.2':
+        checks:
+          - 'syntax lint metadata_lint check:symlinks check:git_ignore check:dot_underscore check:test_file rubocop'
+          - parallel_spec
+        puppet_version: '~> 7'
     # beaker: true
     use_litmus: false
     litmus:
       provision_list: [centos7]
       puppet_collection: [puppet6]
       ruby_version: '2.5.7'
-      install_wget: no
+      install_wget: "no"
     default_before_script: true
 .gitpod.Dockerfile:
   unmanaged: true
@@ -633,4 +642,9 @@ spec/spec_helper.rb:
 .github/workflows/pr_test.yml:
   unmanaged: true
 .github/workflows/auto_release.yml:
+  unmanaged: true
+.github/workflows/spec.yml:
+  unmanaged: true
+  checks: 'syntax lint metadata_lint check:symlinks check:git_ignore check:dot_underscore check:test_file rubocop'
+.github/workflows/release.yml:
   unmanaged: true
