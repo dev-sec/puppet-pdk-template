@@ -29,7 +29,9 @@ PDK builds the configuration of the module by reading a set of default configura
 
 Templates like this one can be used in conjunction with the PDK. As default the PDK itself uses the templates within this repository to render files for use within a module. Templates can be passed to the PDK as a flag for several of the commands.
 
-> pdk convert --template-url https://github.com/puppetlabs/pdk-templates
+```bash
+pdk convert --template-url https://github.com/puppetlabs/pdk-templates
+```
 
 Please note that the template only needs to be passed in once if you wish to change it, every command run on the PDK will use the last specified template.
 For more on basic usage and more detailed description of the PDK in action please refer to the [PDK documentation](https://github.com/puppetlabs/pdk/blob/main/README.md).
@@ -46,6 +48,18 @@ The following is a description and explanation of each of the keys within config
 |:-----------------------|:------------|
 | disable\_legacy\_facts | Set to `true` to configure PDK to prevent the use of [legacy Facter facts][legacy_facts_doc]. Currently this will install and enable the [legacy\_facts][legacy_facts_pl_plugin] plugin for puppet-lint for use during `pdk validate`. |
 
+### .editorconfig
+
+> EditorConfig helps maintain consistent coding styles for multiple developers working on the same project across various editors and IDEs.
+
+Please see the [EditorConfig site](https://editorconfig.org) for details on how to install it as a plugin (or if your text editor or IDE includes support natively) and how to configure it.
+
+To enable adding a `.editorconfig`:
+
+```yaml
+.editorconfig:
+  unmanaged: false
+```
 
 ### .gitattributes
 
@@ -77,13 +91,14 @@ Gitlab CI uses a .gitlab-ci.yml file in the root of your repository tell Gitlab 
 | beaker         |Defines if you want the default, Docker-in-Docker acceptance job added. Can be set to `true` to enable the default `acceptance` job, or you can specify the `variables` and `tags` subkeys. These subkeys function the same as the `global_variables` option and the `tags` subkey found in the `ruby_versions` option.|
 | global_variables |Allows you to set any global environment variables for the gitlab-ci pipeline. Currently includes setting the Puppet gem version.|
 | cache          | If this setting exists, it expects a single sub-key called `paths`. `paths` is an array of paths that will be cached for each subsequent job. Defaults to `['vendor/bundle']`|
+| tags           | If this setting exists, it expects an array of tags that will be added to each job. Not set by default.|
 | bundler\_args   |Define any arguments you want to pass through to bundler. The default is `--without system_tests --path vendor/bundle --jobs $(nproc)` which avoids installing unnecessary gems while installing them to the `vendor/bundler.|
 | ruby_versions  |Define a list of ruby_versions to test against. Each version can have a series of sub-keys that are options. `checks` is the rake command(s) to run during the job. `puppet_version` sets the PUPPET_GEM_VERSION environment variable. `allow_failure` is an array of `checks` where you want to allow failures. `tags` is an array of Gitlab CI Runner tags. |
 | ruby_versions\\{job}\\**except/only**|Basic `except`/`only` is an hash of `checks` with array of references of conditions for the `checks`:<br><br><pre>ruby_versions:<br>&nbsp;&nbsp;2.4.9:<br>&nbsp;&nbsp;&nbsp;&nbsp;except:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unit:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- tags<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- main</pre><br><br>Advanced `except`/`only` is an hash of `checks` with hash using 4 keywords `'variables', 'refs', 'changes', 'kubernetes'` each with it's own array of references or conditions for the `checks`:<br><br><pre>ruby_versions:<br>&nbsp;&nbsp;2.4.9:<br>&nbsp;&nbsp;&nbsp;&nbsp;except:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unit:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refs:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- tags<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- main<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variables:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- $CI_COMMIT_MESSAGE =~ /\[skip[ _-]tests?\]/i</pre> https://docs.gitlab.com/ce/ci/yaml/README.html#onlyexcept-advanced |
 | custom_jobs    |Define custom Gitlab CI jobs that will be executed. It is recommended that you use this option if you need customized Gitlab CI jobs. Please see the [.gitlab-ci.yml](https://docs.gitlab.com/ce/ci/yaml/README.html) docs for specifics.|
 | rubygems_mirror | Use a custom rubygems mirror url |
 | image          |Define the Docker image to use, when using the Docker runner. Please see the [Using Docker images](https://docs.gitlab.com/ee/ci/docker/using_docker_images.html) docs for specifics.|
-| custom_before_steps |Allows you to pass additional steps to the GitLab CI before_script. Please see the [.gitlab-ci.yml](https://docs.gitlab.com/ce/ci/yaml/#before_script-and-after_script) docs for specifics.|
+| custom_before_steps |Allows you to pass additional steps to the GitLab CI before_script. Please see the [.gitlab-ci.yml](https://docs.gitlab.com/ce/ci/yaml/#before_script-and-after_script) docs for specifics. If given as an array, the steps are executed _before_ the default steps of the before_script. If you want to have more control over the execution order of the steps, you can define a hash with a `before` and/or `after` key holding an array of steps to be executed before and after the default_script respectively.|
 | default_before_script  |If false, removes the default `before_script` section. Useful if you need a customised Bundler install, or to remove Bundler entirely. If the key is unset the default behaviour is to add `before_script`.|
 |use_litmus| By default it is disabled. Set to `true` to configure travis to use Litmus testing tool for acceptance testing jobs with default values.|
 |litmus|Allows you to update default config values. Its sub keys are `provision_list`, `puppet_collection`, `ruby_version`, `install_wget` which are detailed below.|
@@ -96,17 +111,26 @@ Gitlab CI uses a .gitlab-ci.yml file in the root of your repository tell Gitlab 
 ### Gitpod configuration
 If you are using Gitpod you will need to opt-in and enable gitpod support for pdk-templates.  To do this simple set the following configurations.
 
-```
+```yaml
 .gitpod.Dockerfile:
   unmanaged: false
 .gitpod.yml:
   unmanaged: false
-
 ```
 
 ### Github Workflows
 
 These workflows are depending on puppet-internal resources and are currently not suited for public consumption. Feel free to take them as inspiration how to run some tests on Github Actions. Please let us know at <ia_content@puppet.com> what you come up with!
+
+### .github/workflows/auto_release.yml
+
+The auto release workflows uses the PDK experimental command `pdk release prep` to prepare a module release PR. By default the workflow can be triggered manually when a release preparation PR needs to be created, however it allows setting a cron based trigger that can run automatically. 
+To set up the automated release cron you can add a configuration to your .sync.yml file that matches the following example:
+```yaml
+release_schedule:
+   cron: '0 3 * * 6'
+```
+In this example the automated release prep workflow is triggered every Saturday at 3 am.
 
 ### .pdkignore
 
@@ -196,6 +220,7 @@ Travis uses a .travis.yml file in the root of your repository to learn about you
 |changelog\_user|Sets the github user for the change_log_generator rake task. Optional, if not set it will read the `author` from the `metadata.json` file.|
 |changelog\_project|Sets the github project name for the change\_log\_generator rake task. Optional, if not set it will parse the `source` from the `metadata.json` file|
 |changelog\_since\_tag|Sets the github since_tag for the change\_log\_generator rake task. Required for the `changelog` rake task.|
+|changelog\_max\_issues|Sets the github max_issues for the change\_log\_generator rake task. Optional to limit max issues. | 
 |changelog\_version\_tag\_pattern|Template how the version tag is to be generated. Defaults to `'v%s'` which eventually align with tag\_pattern property of puppet-blacksmith, thus changelog is referring to the correct version tags and compare URLs. |
 |github_site|Override built-in default for public GitHub. Useful for GitHub Enterprise and other. (Example: `github_site = https://git.domain.tld`) |
 |github_endpoint|Override built-in default for public GitHub. Useful for GitHub Enterprise and other. (Example: `github_endpoint = https://git.domain.tld/api/v4`) |

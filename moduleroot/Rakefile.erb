@@ -92,6 +92,9 @@ if Bundler.rubygems.find_name('github_changelog_generator').any?
 <% if @configs['changelog_since_tag'] -%>
     config.since_tag = <%= @configs['changelog_since_tag'].inspect %>
 <% end -%>
+<% if @configs['changelog_max_issues'] -%>
+    config.max_issues = <%= @configs['changelog_max_issues'].inspect %>
+<% end -%>
     config.future_release = "#{changelog_future_release}"
     config.exclude_labels = ['no changelog','invalid']
     config.add_pr_wo_labels = true
